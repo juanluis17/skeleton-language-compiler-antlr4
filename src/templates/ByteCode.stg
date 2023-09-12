@@ -1,0 +1,168 @@
+group ByteCode;
+
+javaClass(className, attributes,methods) ::= <<
+; public class <className> extends Object { ...}
+.class public <className>
+.super java/lang/Object
+
+; COMMENT: --> Atributos
+<attributes; separator="\n">
+
+; public <className>() { super(); } // calls java.lang.Object()
+.method public \<init>()V
+    .limit stack 1
+    .limit locals 1
+    aload_0
+    invokespecial java/lang/Object/\<init>()V
+    return
+.end method
+
+; main()
+.method public static main([Ljava/lang/String;)V
+   .limit stack 1
+   .limit locals 1
+   ; este método tiene solo la llamada al método skeleton por el cual empieza la ejecución del código
+   invokestatic <className>/skeleton()V
+   return
+.end method
+
+; COMMENT: --> Métodos
+<methods; separator="\n">
+>>
+
+//Si es un lenguaje que lleva modificadores deben ponerse como parámetro
+//Como el lenguaje es estructurado los atributos también deben ser públicos y estáticos 
+attribute(name,type)::= <<
+; COMMENT: --> Atributo <name> de tipo <type>
+.field public static <name> <type>
+>>
+
+//Como el lenguaje es estructurado los métodos son públicos y estáticos
+method(retDesc,argDesc,name,instructions,maxStackDepth,maxLocals)::=<<
+.method public static <name>(<argDesc>)<retDesc>
+    .limit stack <maxStackDepth> ; COMMENT: --> Espacio que necesita la pila
+    .limit locals <maxLocals> ; COMMENT: --> Cantidad de variable locales
+    <instructions; separator="\n">
+.end method
+>>
+
+
+block(instructions)::= <<
+<instructions; separator="\n">
+>>
+
+assignLocal(mnemonic,id,varNum,v) ::= <<
+; COMMENT: --> Asignación de un resultado a <id>
+<v; separator="\n">
+<mnemonic>store <varNum>
+>>
+
+assignGlobal(className,id,v,descriptor) ::= <<
+; COMMENT: --> Asignación de un resultado a la variable global <id>
+<v; separator="\n">
+putstatic <className>/<id> <descriptor>
+>>
+
+return(mnemonic,v)::= <<
+<v; separator="\n">
+; COMMENT: --> Retornando un valor
+<mnemonic>return
+>>
+
+callMethod(id,className,retDesc,argDesc,v)::=<<
+; COMMENT: --> Llamando a la función <id>
+<v; separator="\n">
+invokestatic <className>/<id>(<argDesc>)<retDesc>
+>>
+ 
+//fassign(id,varNum,v,descr) ::= <<
+//; compute <descr>
+//<v; separator="\n">
+//fstore <varNum> ; <id>
+//>>
+
+add(mnemonic,a,b) ::= <<
+<a; separator="\n">
+<b; separator="\n">
+<mnemonic>add
+>>
+
+//fadd(a,b) ::= <<
+//<a; separator="\n">
+//<b; separator="\n">
+//fadd
+//>>
+
+sub(mnemonic,a,b) ::= <<
+<a; separator="\n">
+<b; separator="\n">
+<mnemonic>sub
+>>
+
+//fsub(a,b) ::= <<
+//<a; separator="\n">
+//<b; separator="\n">
+//fsub
+//>>
+
+mult(mnemonic,a,b) ::= <<
+<a; separator="\n">
+<b; separator="\n">
+<mnemonic>mul
+>>
+
+//fmult(a,b) ::= <<
+//<a; separator="\n">
+//<b; separator="\n">
+//fmul
+//>>
+
+div(mnemonic,a,b) ::= <<
+<a; separator="\n">
+<b; separator="\n">
+<mnemonic>div
+>>
+
+//fdiv(a,b) ::= <<
+//<a; separator="\n">
+//<b; separator="\n">
+//fdiv
+//>>
+
+iwrite(v, ln)::=<<
+; COMMENT: --> Imprimiendo un valor ENTERO
+getstatic java/lang/System/out Ljava/io/PrintStream;
+<v; separator="\n">
+invokevirtual java/io/PrintStream/print<if(ln)><ln><endif>(I)V
+>>
+
+fwrite(v, ln)::=<<
+; COMMENT: --> Imprimiendo un valor REAL
+getstatic java/lang/System/out Ljava/io/PrintStream;
+<v; separator="\n">
+invokevirtual java/io/PrintStream/print<if(ln)><ln><endif>(F)V
+>>
+
+if(exp,sent1,sent2,label1,label2) ::= <<
+;Sentencia If para enteros
+<exp>
+ifeq Label<label1>
+<sent1>
+<if(label2)> ;Si label está definido se genera el goto
+goto Label<label2>
+<endif>
+Label<label1>:
+<if(label2)> ;Si label está definido se generan sent2 y ...
+<sent2>
+Label<label2>:
+<endif>
+>>
+
+valor(valor) ::= "<valor>"
+
+const(v) ::= "ldc <v>"
+
+loadLocal(mnemonic,id, varNum) ::= "<mnemonic>load <varNum> ; COMMENT: --> Cargando la variable <id>"
+
+loadGlobal(className,id,descriptor) ::= "getstatic <className>/<id> <descriptor>"
+

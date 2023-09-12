@@ -1,0 +1,28 @@
+
+int global1;
+int global2;
+
+void metodo1(int a){
+	global1=a;
+	PRINTLN(a,global1);
+}
+
+int metodo2(int a,int b){
+	return a+b;
+}
+
+void metodo3(int a, float b){
+	float c = a*b;
+	if(a){
+		PRINTLN(c);
+	}
+}
+
+void skeleton(){
+	metodo1(5);
+	int k=10;
+	metodo1(k);
+	global2=metodo2(2,4);
+	metodo3(5,6.3);
+	PRINTLN(global2);
+}
